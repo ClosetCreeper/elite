@@ -22,22 +22,20 @@ const STATUS_META = {
 
 function formatEta(eta) {
   if (!eta) return null;
-  // Already MM/DD/YYYY
-  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(eta.trim())) return eta.trim();
+  const trimmed = eta.trim();
+  // Already MM/DD/YYYY — return as-is
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmed)) return trimmed;
   // MM/DD with no year — append current year
-  if (/^\d{1,2}\/\d{1,2}$/.test(eta.trim())) {
-    return `${eta.trim()}/${new Date().getFullYear()}`;
+  if (/^\d{1,2}\/\d{1,2}$/.test(trimmed)) {
+    return `${trimmed}/${new Date().getFullYear()}`;
   }
-  // Try parsing as a full date string
-  const parsed = new Date(eta);
-  if (!isNaN(parsed.getTime())) {
-    const mm = String(parsed.getMonth() + 1).padStart(2, "0");
-    const dd = String(parsed.getDate()).padStart(2, "0");
-    const yyyy = parsed.getFullYear();
+  // ISO date (YYYY-MM-DD) — convert to MM/DD/YYYY
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [yyyy, mm, dd] = trimmed.split("-");
     return `${mm}/${dd}/${yyyy}`;
   }
-  // Plain text fallback
-  return eta;
+  // Anything else (e.g. "May 10", "this weekend") — show as-is, don't try to parse
+  return trimmed;
 }
 
 export async function getServerSideProps({ params }) {
